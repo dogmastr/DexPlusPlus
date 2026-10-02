@@ -1752,6 +1752,7 @@ local function main()
 		else
 			if Properties.IsTextEditable(prop) then
 				inputTextBox.Text = propVal and Properties.ValueToString(prop,propVal) or ""
+				inputTextBox.ClearTextOnFocus = Settings.Properties.ClearOnFocus
 				inputTextBox:CaptureFocus()
 			elseif typeData.Category == "Enum" then
 				Properties.DisplayEnumDropdown(entryIndex)

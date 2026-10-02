@@ -131,7 +131,7 @@ local function main()
 			end
 		end
 		for _, _function in pairs(env.getgc()) do
-			if typeof(_function) == "function" and getfenv(_function).script and getfenv(_function).script == scr then
+			if typeof(_function) == "function" and getfenv(_function).script == scr then
 				functions:dump_function(_function, 0)
 				functions:add_to_dump("\n" .. ("="):rep(100), 0, false)
 			end

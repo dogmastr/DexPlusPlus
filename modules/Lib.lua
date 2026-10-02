@@ -2511,7 +2511,7 @@ local function main()
 
 		local function moveToTop(window)
 			local found = table.find(visibleWindows,window)
-			if found then
+			if found and found ~= 1 then -- already on top: skip the full re-layout
 				table.remove(visibleWindows,found)
 				table.insert(visibleWindows,1,window)
 				updateWindows()

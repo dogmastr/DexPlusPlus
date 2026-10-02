@@ -1896,7 +1896,7 @@ local function main()
 			end,
 		},
 		Default = function(argString,caseSensitive)
-			local cleanString = argString:gsub("\"","\\\""):gsub("\n","\\n")
+			local cleanString = argString:gsub("\\","\\\\"):gsub("\"","\\\""):gsub("\n","\\n")
 			if caseSensitive then
 				return {
 					Headers = {"local find = string.find"},
@@ -2317,7 +2317,7 @@ return search]==]
 
 				local id = sys.ClickId
 				Lib.FastWait(sys.ComboTime)
-				if combo == 1 and id == sys.ClickId and sys.IsRenaming and selection.Map[node] then
+				if combo == 1 and id == sys.ClickId and sys.IsRenaming and selection.Map[node] and Settings.Explorer.ClickToRename then
 					Explorer.SetRenamingNode(node)
 				end
 			elseif button == 2 then

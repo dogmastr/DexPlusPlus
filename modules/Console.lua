@@ -709,9 +709,18 @@ local function main()
 					log:Destroy()
 				end
 			end
+			table.clear(displayedOutput)
 		end)
 
 		local focussedOutput
+
+		OutputTextSize:GetPropertyChangedSignal("Value"):Connect(function()
+			for _, log in ipairs(displayedOutput) do
+				if typeof(log) == "Instance" then
+					log.TextSize = OutputTextSize.Value
+				end
+			end
+		end)
 
 		LogService.MessageOut:Connect(function(msg, msgtype)
 			local formattedText = ""
@@ -742,9 +751,6 @@ local function main()
 			end
 
 			newOutputText.TextSize = OutputTextSize.Value
-			OutputTextSize:GetPropertyChangedSignal("Value"):Connect(function()
-				newOutputText.TextSize = OutputTextSize.Value
-			end)
 
 			newOutputText.Focused:Connect(function()
 				focussedOutput = newOutputText

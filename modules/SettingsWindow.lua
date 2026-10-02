@@ -196,7 +196,7 @@ local function main()
 	end
 	
 	SettingsWindow.ReloadPrompt = function()		
-		local win = ScriptViewer.ReloadPromptWindow
+		local win = SettingsWindow.ReloadPromptWindow
 		if not win then
 			win = Lib.Window.new()
 			win.Alignable = false

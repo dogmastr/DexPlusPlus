@@ -555,8 +555,9 @@ local function main()
 		win.Elements.NameBox:SetText(filename or "")
 		
 		win.Elements.SaveButton:SetDisabled(win.Elements.NameBox:GetText() == 0)
-		
+
 		win:Show()
+		repeat task.wait() until win.Closed
 	end
 	
 	-- Classes

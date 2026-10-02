@@ -55,6 +55,7 @@ local function main()
 	local iconData
 	local remote_blocklist = {} -- k = blocked remote instance, v = the method name blocked on it (e.g. "FireServer")
 	nodes = nodes or {}
+	local dirtyParents = {} -- nodes whose child lists contain deleted nodes, compacted by InitDelCleaner
 
 	addObject = function(root)
 		if nodes[root] then return end
@@ -167,6 +168,7 @@ local function main()
 		local par = node.Parent
 		if par then
 			par.HasDel = true
+			dirtyParents[par] = true
 		end
 
 		local function recur(root)
@@ -2322,8 +2324,9 @@ return search]==]
 			local fw = Lib.FastWait
 			while true do
 				local processed = false
-				local c = 0
-				for _,node in next,nodes do
+				local dirty = dirtyParents
+				dirtyParents = {} -- parents marked while we yield below go into the next pass
+				for node in next,dirty do
 					if node.HasDel then
 						local delInd
 						for i = 1,#node do
@@ -2346,11 +2349,6 @@ return search]==]
 						end
 						node.HasDel = false
 						processed = true
-						fw()
-					end
-					c = c + 1
-					if c > 10000 then
-						c = 0
 						fw()
 					end
 				end

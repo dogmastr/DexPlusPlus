@@ -4405,9 +4405,10 @@ local function main()
 			local rightSub = lines[sel2Y+1]:sub(sel2X+1)
 			lines[selY+1] = leftSub..rightSub
 
-			local remove = table.remove
-			for i = 1,deltaLines do
-				remove(lines,selY+2)
+			if deltaLines > 0 then
+				local n = #lines
+				table.move(lines, sel2Y+2, n, selY+2)
+				for i = n, n-deltaLines+1, -1 do lines[i] = nil end
 			end
 
 			if range == self.SelectionRange then self.SelectionRange = {{-1,-1},{-1,-1}} end
@@ -5018,7 +5019,7 @@ local function main()
 			end
 		end
 
-		funcs.ProcessTextChange = function(self)
+		funcs.ProcessTextChange = function(self,immediate)
 			local maxCols = 0
 			local lines = self.Lines
 
@@ -5030,11 +5031,27 @@ local function main()
 			end
 
 			self.MaxTextCols = maxCols
-			self:UpdateView()	
-			self.Text = table.concat(self.Lines,"\n")
-			self:MapNewLines()
-			self:PreHighlight()
-			self:Refresh()
+			self:UpdateView()
+
+			-- Rescanning the whole text for strings/comments is the slow part (~150 ms at 20k lines),
+			-- so while typing in big scripts it only runs once typing pauses. Colors catch up then.
+			local highlightId = (self.HighlightId or 0) + 1
+			self.HighlightId = highlightId
+			local function rehighlight()
+				if self.HighlightId ~= highlightId then return end
+				self.Text = table.concat(self.Lines,"\n")
+				self:MapNewLines()
+				self:PreHighlight()
+				self:Refresh()
+			end
+
+			if immediate or #lines < 2000 then
+				rehighlight()
+			else
+				self.ColoredLines = {}
+				self:Refresh()
+				task.delay(0.2, rehighlight)
+			end
 			--self.TextChanged:Fire()
 		end
 
@@ -5064,7 +5081,7 @@ local function main()
 				count = count + 1
 			end
 
-			self:ProcessTextChange()
+			self:ProcessTextChange(true)
 		end
 
 		funcs.MakeRichTemplates = function(self)

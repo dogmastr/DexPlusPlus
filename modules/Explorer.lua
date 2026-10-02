@@ -53,7 +53,7 @@ local function main()
 	local addObject,removeObject,moveObject = nil,nil,nil
 
 	local iconData
-	local remote_blocklist = {} -- list of remotes beng blocked, k = the remote instance, v = their old function :3
+	local remote_blocklist = {} -- k = blocked remote instance, v = the method name blocked on it (e.g. "FireServer")
 	nodes = nodes or {}
 
 	addObject = function(root)
@@ -932,21 +932,11 @@ local function main()
 		if presentClasses["ProximityPrompt"] then context:AddRegistered("FIRE_PROXIMITYPROMPT", fireproximityprompt == nil) end
 		
 		
-		if presentClasses["RemoteEvent"] then context:AddRegistered("BLOCK_REMOTE", env.hookfunction == nil) end
-		if presentClasses["RemoteEvent"] then context:AddRegistered("UNBLOCK_REMOTE", env.hookfunction == nil) end
-		
-		if presentClasses["RemoteFunction"] then context:AddRegistered("BLOCK_REMOTE", env.hookfunction == nil) end
-		if presentClasses["RemoteFunction"] then context:AddRegistered("UNBLOCK_REMOTE", env.hookfunction == nil) end
-
-		if presentClasses["UnreliableRemoteEvent"] then context:AddRegistered("BLOCK_REMOTE", env.hookfunction == nil) end
-		if presentClasses["UnreliableRemoteEvent"] then context:AddRegistered("UNBLOCK_REMOTE", env.hookfunction == nil) end
-		
-		
-		if presentClasses["BindableEvent"] then context:AddRegistered("BLOCK_REMOTE", env.hookfunction == nil) end
-		if presentClasses["BindableEvent"] then context:AddRegistered("UNBLOCK_REMOTE", env.hookfunction == nil) end
-		
-		if presentClasses["BindableFunction"] then context:AddRegistered("BLOCK_REMOTE", env.hookfunction == nil) end
-		if presentClasses["BindableFunction"] then context:AddRegistered("UNBLOCK_REMOTE", env.hookfunction == nil) end
+		if presentClasses["RemoteEvent"] or presentClasses["RemoteFunction"] or presentClasses["UnreliableRemoteEvent"]
+			or presentClasses["BindableEvent"] or presentClasses["BindableFunction"] then
+			context:AddRegistered("BLOCK_REMOTE", env.hookmetamethod == nil)
+			context:AddRegistered("UNBLOCK_REMOTE", env.hookmetamethod == nil)
+		end
 		
 		
 		
@@ -1395,26 +1385,30 @@ local function main()
 			RemoteFunction = "InvokeServer",
 			UnreliableRemoteEvent = "FireServer",
 
-			BindableRemote = "Fire",
+			BindableEvent = "Fire",
 			BindableFunction = "Invoke",
 		}
+		local remoteBlockHookInstalled = false
+		local function installRemoteBlockHook()
+			if remoteBlockHookInstalled then return end
+			remoteBlockHookInstalled = true
+			local old; old = env.hookmetamethod((oldgame or game), "__namecall", function(self, ...)
+				if remote_blocklist[self] == getnamecallmethod() then
+					return nil
+				end
+				return old(self,...)
+			end)
+		end
 		context:Register("BLOCK_REMOTE",{Name = "Block From Firing", IconMap = Explorer.MiscIcons, Icon = "Delete", DisabledIcon = "Empty", OnClick = function()
+			installRemoteBlockHook()
 			local sList = selection.List
 			for i, list in sList do
 				local obj = list.Obj
 				if not remote_blocklist[obj] then
-					local functionToHook = ClassFire[obj.ClassName]
-					remote_blocklist[obj] = true
-					local old; old = env.hookmetamethod((oldgame or game), "__namecall", function(self, ...)
-						if remote_blocklist[obj] and self == obj and getnamecallmethod() == functionToHook then
-							return nil
-						end
-						return old(self,...)
-					end)
+					remote_blocklist[obj] = ClassFire[obj.ClassName]
 					if Settings.RemoteBlockWriteAttribute then
 						obj:SetAttribute("IsBlocked", true)
 					end
-					--print("blocking ",functionToHook)
 				end
 			end
 		end})

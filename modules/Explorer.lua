@@ -912,7 +912,7 @@ local function main()
 		-- context:AddRegistered("CALL_FUNCTION")
 		-- context:AddRegistered("VIEW_CONNECTIONS")
 		-- context:AddRegistered("GET_REFERENCES")
-		context:AddRegistered("COPY_API_PAGE")
+		if env.setclipboard then context:AddRegistered("COPY_API_PAGE") end
 
 		context:QueueDivider()
 
@@ -1315,7 +1315,10 @@ local function main()
 		-- this code is very bad but im lazy and it works so cope
 		local clth = function(str)
 			if str:sub(1, 28) == "game:GetService(\"Workspace\")" then str = str:gsub("game:GetService%(\"Workspace\"%)", "workspace", 1) end
-			if str:sub(1, 27 + #plr.Name) == "game:GetService(\"Players\")." .. plr.Name then str = str:gsub("game:GetService%(\"Players\"%)." .. plr.Name, "game:GetService(\"Players\").LocalPlayer", 1) end
+			local prefix = "game:GetService(\"Players\")." .. plr.Name
+			if str:sub(1, #prefix) == prefix and str:sub(#prefix + 1, #prefix + 1):match("^[%.%[:]?$") then
+				str = "game:GetService(\"Players\").LocalPlayer" .. str:sub(#prefix + 1)
+			end
 			return str
 		end
 
@@ -1718,8 +1721,7 @@ local function main()
 				end
 			elseif parObj == nil then
 				local getnil = "local getNil = function(name, class) for _, v in next, getnilinstances() do if v.ClassName == class and v.Name == name then return v end end end"
-				local gotnil = "\n\ngetNil(\"%s\", \"%s\")"
-				indexName = getnil .. gotnil:format(curObj.Name, className)
+				indexName = getnil .. ('\n\ngetNil("%s", "%s")'):format(formatLuaString(curObj.Name), className)
 			end
 
 			path = indexName..path

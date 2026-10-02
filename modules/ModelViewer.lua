@@ -279,7 +279,7 @@ local function main()
 			window:Hide()
 		end})
 		context:Register("COPY_PATH",{Name = "Copy Path", OnClick = function()
-			if model then
+			if model and env.setclipboard then
 				env.setclipboard(getPath(originalModel))
 			end
 		end})
@@ -360,7 +360,7 @@ local function main()
 
 			context:AddRegistered("STOP", not ModelViewer.IsViewing)	
 			context:AddRegistered("REFRESH", not ModelViewer.IsViewing)
-			context:AddRegistered("COPY_PATH", not ModelViewer.IsViewing)
+			context:AddRegistered("COPY_PATH", not ModelViewer.IsViewing or not env.setclipboard)
 			context:AddRegistered("SAVE_INST", not ModelViewer.IsViewing)
 			context:AddDivider()
 			

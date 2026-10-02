@@ -295,7 +295,7 @@ local function main()
 		
 		local bgTransparency = AddTextbox("Background Transparency", tostring(Settings.Window.Transparency), 15)
 		bgTransparency.FocusLost:Connect(function()
-			Settings.Window.Transparency = tonumber(bgTransparency.Text)
+			Settings.Window.Transparency = tonumber(bgTransparency.Text) or Settings.Window.Transparency
 		end)
 		
 		local classIcon = AddDropdown("Class Icons", {"Old", "NewDark", "Vanilla3"}, Settings.ClassIcon, false, 100)

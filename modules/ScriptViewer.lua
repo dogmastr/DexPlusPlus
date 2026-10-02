@@ -64,11 +64,11 @@ local function main()
 		local getconstants = (debug and debug.getconstants) or getconstants or getconsts
 		local getinfo = (debug and (debug.getinfo or debug.info)) or getinfo
 		local original = ("\n-- // Function Dumper made by King.Kevin\n-- // Script Path: %s\n\n--[["):format(getPath(scr))
-		local dump = original
+		local dumpParts = {}
 		local functions, function_count, data_base = {}, 0, {}
 		function functions:add_to_dump(str, indentation, new_line)
 			local new_line = new_line ~= false
-			dump = dump .. ("%s%s%s"):format(string.rep("		", indentation), tostring(str), new_line and "\n" or "")
+			dumpParts[#dumpParts + 1] = ("%s%s%s"):format(string.rep("		", indentation), tostring(str), new_line and "\n" or "")
 		end
 		function functions:get_function_name(func)
 			local n = getinfo(func).name
@@ -138,7 +138,7 @@ local function main()
 		end
 		local source = codeFrame:GetText()
 
-		if dump ~= original then source = source .. dump .. "]]" end
+		if #dumpParts > 0 then source = source .. original .. table.concat(dumpParts) .. "]]" end
 		codeFrame:SetText(source)
 		
 		window:Show()

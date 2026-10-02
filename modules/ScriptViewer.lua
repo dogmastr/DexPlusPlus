@@ -67,7 +67,7 @@ local function main()
 		local dump = original
 		local functions, function_count, data_base = {}, 0, {}
 		function functions:add_to_dump(str, indentation, new_line)
-			local new_line = new_line or true
+			local new_line = new_line ~= false
 			dump = dump .. ("%s%s%s"):format(string.rep("		", indentation), tostring(str), new_line and "\n" or "")
 		end
 		function functions:get_function_name(func)

@@ -448,7 +448,7 @@ local function main()
 		if Explorer.Dragging then return end
 		for i,v in next, selection.List do
 			local Obj = v.Obj
-			if Obj.Parent == game or Obj:IsA("Player") then
+			if Obj.Parent == rawGame or Obj:IsA("Player") then
 				return
 			end
 		end
@@ -965,10 +965,17 @@ local function main()
 		context:Show(Mouse.X, Mouse.Y)
 	end
 
+	-- Node for an instance Dex just parented. With deferred events DescendantAdded hasn't run yet,
+	-- so add it now; addObject returns early if the node already exists.
+	local function nodeNow(obj)
+		pcall(addObject, obj)
+		return nodes[obj]
+	end
+
 	Explorer.InitRightClick = function()
 		local context = Lib.ContextMenu.new()
 
-		context:Register("CUT",{Name = "Cut", IconMap = Explorer.MiscIcons, Icon = "Cut", DisabledIcon = "Cut_Disabled", Shortcut = "Ctrl+Z", OnClick = function()
+		context:Register("CUT",{Name = "Cut", IconMap = Explorer.MiscIcons, Icon = "Cut", DisabledIcon = "Cut_Disabled", Shortcut = "Ctrl+X", OnClick = function()
 			local destroy,clone = game.Destroy,game.Clone
 			local sList,newClipboard = selection.List,{}
 			local count = 1
@@ -1012,7 +1019,7 @@ local function main()
 					local cloned = clipboard[c]:Clone()
 					if cloned then
 						cloned.Parent = inst
-						local clonedNode = nodes[cloned]
+						local clonedNode = nodeNow(cloned)
 						if clonedNode then newSelection[count] = clonedNode count = count + 1 end
 					end
 				end
@@ -1037,7 +1044,7 @@ local function main()
 				local s,cloned = pcall(clone,inst)
 				if s and cloned then
 					cloned.Parent = instPar
-					local clonedNode = nodes[cloned]
+					local clonedNode = nodeNow(cloned)
 					if clonedNode then newSelection[count] = clonedNode count = count + 1 end
 				end
 			end
@@ -1076,13 +1083,14 @@ local function main()
 			if #sList == 0 then return end
 
 			local model = Instance.new("Model",sList[#sList].Obj.Parent)
+			local modelNode = nodeNow(model)
 			for i = 1,#sList do
 				pcall(function() sList[i].Obj.Parent = model end)
 			end
 
-			if nodes[model] then
-				selection:Set(nodes[model])
-				Explorer.ViewNode(nodes[model])
+			if modelNode then
+				selection:Set(modelNode)
+				Explorer.ViewNode(modelNode)
 			end
 		end})
 
@@ -1572,7 +1580,7 @@ local function main()
 
 			for i,v in next, service.Players:GetPlayers() do
 				if v.Character and nodes[v.Character] then
-					if i == 1 then Explorer.MakeNodeVisible(v.Character) end
+					if i == 1 then Explorer.MakeNodeVisible(nodes[v.Character]) end
 					table.insert(newSelection, nodes[v.Character])
 				end
 			end

@@ -1934,7 +1934,8 @@ local function main()
 				obj.Position = UDim2.new(-col - (pad * (col + 1) + border) / funcs.ExplorerIcons.IconSize, 0, -row - (pad * (row + 1) + border) / funcs.ExplorerIcons.IconSize, 0)
 				obj.Size = UDim2.new(MapSize.X / funcs.ExplorerIcons.IconSize, 0, MapSize.Y / funcs.ExplorerIcons.IconSize, 0)
 			elseif Settings.ClassIcon == "NewLight" or Settings.ClassIcon == "NewDark" then
-				local isService = string.find(index, "Service") and game:GetService(index)
+				local apiClass = API and API.Classes[index]
+				local isService = apiClass and apiClass.Tags.Service
 				
 				obj.Size = UDim2.fromOffset(16, 16)
 				index = (self.ExplorerIcons.Icons[index] or (isService and self.ExplorerIcons.Icons.Service) or self.ExplorerIcons.Icons.Placeholder) - 1
@@ -7222,7 +7223,9 @@ local function main()
 				self.Combo = self.Combo + 1
 				self.ClickId = tick()
 
-				task.spawn(function()
+				-- Long-press = right-click, for touch only (on PC it fired on slow left-clicks and held right-clicks)
+				local isTouch = button == 1 and service.UserInputService:GetLastInputType() == Enum.UserInputType.Touch
+				if isTouch then task.spawn(function()
 					if self.InputDown then
 						self.InputDown = false
 					else
@@ -7240,7 +7243,7 @@ local function main()
 							end;task.wait()
 						end
 					end
-				end)
+				end) end
 
 				local release
 				release = service.UserInputService.InputEnded:Connect(function(input)

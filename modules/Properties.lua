@@ -1013,6 +1013,9 @@ local function main()
 				elseif name:sub(1,3) == "RBX" then
 					errorLabel.Text = "Error: Name begins with 'RBX'"
 					return
+				elseif not name:match("^[%w_]+$") then
+					errorLabel.Text = "Error: Only letters, digits and _"
+					return
 				end
 
 				local typ = typeChooser.Selected

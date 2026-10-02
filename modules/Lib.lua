@@ -392,7 +392,7 @@ local function main()
 			if con then con:Disconnect() con = nil end
 			if target then
 				con = target.Changed:Connect(function(prop)
-					if not disabled and prop == "AbsolutePosition" or prop == "AbsoluteSize" then
+					if not disabled and (prop == "AbsolutePosition" or prop == "AbsoluteSize") then
 						update()
 					end
 				end)
@@ -554,7 +554,7 @@ local function main()
 		win.Elements.Error.Text = ""
 		win.Elements.NameBox:SetText(filename or "")
 		
-		win.Elements.SaveButton:SetDisabled(win.Elements.NameBox:GetText() == 0)
+		win.Elements.SaveButton:SetDisabled(#win.Elements.NameBox:GetText() == 0)
 
 		win:Show()
 		repeat task.wait() until win.Closed
@@ -5898,7 +5898,7 @@ local function main()
 					updateColor(1)
 				end
 			end
-			hueInput.FocusLost:Connect(function() updateHue(hueInput.Text) end) hookButtons(hueInput, hueInput)
+			hueInput.FocusLost:Connect(function() updateHue(hueInput.Text) end) hookButtons(hueInput, updateHue)
 
 			local function updateSat(str)
 				local num = tonumber(str)

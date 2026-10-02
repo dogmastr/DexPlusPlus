@@ -232,7 +232,7 @@ local function main()
 
 		viewportFrame.InputChanged:Connect(function(input)
 			if not ModelViewer.EnableInputCamera then return end
-			if dragging and input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 				local delta = input.Position - lastpos
 				lastpos = input.Position
 

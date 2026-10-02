@@ -1820,6 +1820,36 @@ local function main()
 		Explorer.InsertObjectContext = context
 	end
 	
+	-- Splits "Name op value" (op one of == ~= >= <= > <) into name, op, rawValue. rawValue is "" if op is absent.
+	local function parseAttrOrProp(argString)
+		local name,rest = argString:match("^%s*(%S+)%s*(.-)$")
+		if not name or #name == 0 then return nil end
+
+		local ops = {"==","~=",">=","<="}
+		for i = 1,#ops do
+			local op = ops[i]
+			if rest:sub(1,#op) == op then
+				return name,op,rest:sub(#op+1):match("^%s*(.-)$")
+			end
+		end
+		if rest:sub(1,1) == ">" or rest:sub(1,1) == "<" then
+			return name,rest:sub(1,1),rest:sub(2):match("^%s*(.-)$")
+		end
+
+		return name,nil,""
+	end
+
+	-- Turns a raw comparison value (number, true/false, "quoted" or bare string) into a Luau literal.
+	local function filterValueLiteral(valueStr)
+		if valueStr == "true" or valueStr == "false" or tonumber(valueStr) then
+			return valueStr
+		end
+
+		local quoted = valueStr:match('^"(.*)"$') or valueStr
+		quoted = quoted:gsub("\\","\\\\"):gsub("\"","\\\"")
+		return "\""..quoted.."\""
+	end
+
 	--[[
 		Headers, Setups, Predicate, ObjectDefs
 	]]
@@ -1872,6 +1902,50 @@ local function main()
 					Setups = {"local hrpPos = hrp.Position"},
 					ObjectDefs = {"local isBasePart = isa(obj,'BasePart')"},
 					Predicate = "(isBasePart and (obj.Position-hrpPos).Magnitude <= "..num..")"
+				}
+			end,
+			["tag"] = function(argString)
+				local tagName = argString and argString:match("^%s*(.-)%s*$")
+				if not tagName or #tagName == 0 then return end
+				local cleanName = tagName:gsub("\\","\\\\"):gsub("\"","\\\"")
+
+				return {
+					Headers = {"local cs = service.CollectionService"},
+					Predicate = "cs:HasTag(obj,\""..cleanName.."\")"
+				}
+			end,
+			["attr"] = function(argString)
+				if not argString or #argString == 0 then return end
+				local name,op,valueStr = parseAttrOrProp(argString)
+				if not name then return end
+				local cleanName = name:gsub("\\","\\\\"):gsub("\"","\\\"")
+
+				if not op then
+					return {
+						Headers = {},
+						Predicate = "(obj:GetAttribute(\""..cleanName.."\") ~= nil)"
+					}
+				end
+				if #valueStr == 0 then return end
+
+				local value = filterValueLiteral(valueStr)
+				return {
+					Headers = {},
+					-- pcall guards comparisons of non-numeric attribute values (Vector3, Color3, ...) against >/</etc, which Luau errors on
+					Predicate = "(function() local ok,v = pcall(function() local val = obj:GetAttribute(\""..cleanName.."\") return val ~= nil and val "..op.." "..value.." end) return ok and v end)()"
+				}
+			end,
+			["prop"] = function(argString)
+				if not argString or #argString == 0 then return end
+				local name,op,valueStr = parseAttrOrProp(argString)
+				if not name or not op or #valueStr == 0 then return end
+				local cleanName = name:gsub("\\","\\\\"):gsub("\"","\\\"")
+				local value = filterValueLiteral(valueStr)
+
+				return {
+					Headers = {},
+					-- pcall guards both a missing property and a comparison Luau can't do (e.g. Vector3 > number)
+					Predicate = "(function() local ok,v = pcall(function() local val = obj[\""..cleanName.."\"] return val ~= nil and val "..op.." "..value.." end) return ok and v end)()"
 				}
 			end,
 		},

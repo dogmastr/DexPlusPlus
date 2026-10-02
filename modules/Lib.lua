@@ -4224,11 +4224,9 @@ local function main()
 			local leftSub = lines[selY+1]:sub(selX+1)
 			local rightSub = lines[sel2Y+1]:sub(1,sel2X)
 
-			local result = leftSub.."\n" 
-			for i = selY+1,sel2Y-1 do
-				result = result..lines[i+1].."\n"
-			end
-			result = result..rightSub
+			local parts = table.move(lines, selY+2, sel2Y, 2, {leftSub})
+			parts[#parts+1] = rightSub
+			local result = table.concat(parts, "\n")
 
 			return self:ConvertText(result,false)
 		end

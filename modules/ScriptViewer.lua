@@ -238,7 +238,7 @@ local function main()
 
 		execute.MouseButton1Click:Connect(function()
 			local source = codeFrame:GetText()
-			env.loadstring(source)()
+			assert(env.loadstring(source))()
 		end)
 
 		clear = Instance.new("TextButton",window.GuiElems.Content)

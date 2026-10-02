@@ -556,10 +556,6 @@ local function main()
 							table.insert(tokens, currentToken)
 							currentToken = character
 							inString = character
-						elseif operatorsSet[character] then
-							table.insert(tokens, currentToken)
-							table.insert(tokens, character)
-							currentToken = ""
 						elseif character:match("[%w_]") then
 							currentToken = currentToken .. character
 						else
@@ -788,7 +784,7 @@ local function main()
 		Console.CommandLine.ScrollingFrame.TextBox.FocusLost:Connect(function(enterPressed)
 			if enterPressed and Console.CommandLine.ScrollingFrame.TextBox.Text ~= "" then
 				print("> "..Console.CommandLine.ScrollingFrame.TextBox.Text)
-				loadstring(Console.CommandLine.ScrollingFrame.TextBox.Text)()
+				assert(loadstring(Console.CommandLine.ScrollingFrame.TextBox.Text))()
 			end
 		end)
 	end

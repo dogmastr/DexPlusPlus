@@ -414,7 +414,7 @@ local function main()
 				disabled = true
 			end,
 			Destroy = function()
-				con:Disconnect()
+				if con then con:Disconnect() end
 				con = nil
 			end,
 		}
@@ -1908,7 +1908,7 @@ local function main()
 			if self.IndexDict[key] then
 				self:Display(obj, self.IndexDict[key])
 			else
-				local rmdEntry = RMD.Classes[obj.ClassName]
+				local rmdEntry = RMD.Classes[key]
 				Explorer.ClassIcons:Display(obj, rmdEntry and rmdEntry.ExplorerImageIndex or 0)
 			end
 		end
@@ -3545,8 +3545,6 @@ local function main()
 				IconMap = item.IconMap,
 				OnRightClick = item.OnRightClick
 			}
-			
-			newItem.DisabledIcon = newItem.Icon
 
 			if self.QueuedDivider then
 				local text = self.QueuedDividerText and #self.QueuedDividerText > 0 and self.QueuedDividerText
@@ -3955,7 +3953,7 @@ local function main()
 			["getgc"] = true,
 			["getreg"] = true,
 			["filtergc"] = true,
-			["saveinstave"] = true,
+			["saveinstance"] = true,
 			["decompile"] = true,
 			["syn"] = true,
 			["getupvalue"] = true,

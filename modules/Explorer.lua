@@ -541,8 +541,6 @@ local function main()
 		local newEntry = entryTemplate:Clone()
 		newEntry.Position = UDim2.new(0,0,0,20*(index-1))
 
-		local isRenaming = false
-
 		newEntry.InputBegan:Connect(function(input)
 			local node = tree[index + Explorer.Index]
 			if not node or selection.Map[node] or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
@@ -611,7 +609,6 @@ local function main()
 						if dist > 5 then
 							releaseEvent:Disconnect()
 							mouseEvent:Disconnect()
-							isRenaming = false
 							Explorer.StartDrag(listOffsetX, listOffsetY)
 						end
 					end
@@ -627,22 +624,14 @@ local function main()
 			local node = tree[index + Explorer.Index]
 			if not node or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
 
-			if input.UserInputType == Enum.UserInputType.Touch then
-				Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse_Over" or "Expand_Over")
-			elseif input.UserInputType == Enum.UserInputType.MouseMovement then
-				Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse_Over" or "Expand_Over")
-			end
+			Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse_Over" or "Expand_Over")
 		end)
 
 		newEntry.Indent.Expand.InputEnded:Connect(function(input)
 			local node = tree[index + Explorer.Index]
 			if not node or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
 
-			if input.UserInputType == Enum.UserInputType.Touch then
-				Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse" or "Expand")
-			elseif input.UserInputType == Enum.UserInputType.MouseMovement then
-				Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse" or "Expand")
-			end
+			Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse" or "Expand")
 		end)
 
 		newEntry.Indent.Expand.MouseButton1Down:Connect(function()
@@ -1217,7 +1206,6 @@ local function main()
 			end
 		end})
 
-		local OldAnimation
 		context:Register("PLAY_TWEEN",{Name = "Play Tween", IconMap = Explorer.MiscIcons, Icon = "Play", OnClick = function()
 			local sList = selection.List
 

@@ -39,6 +39,7 @@ local function main()
 	local entryTemplate,treeFrame,toolBar,descendantAddedCon,descendantRemovingCon,itemChangedCon
 	local ffa = game.FindFirstAncestorWhichIsA
 	local getDescendants = game.GetDescendants
+	local rawGame = workspace.Parent
 	local getTextSize = service.TextService.GetTextSize
 	local updateDebounce,refreshDebounce = false,false
 	local nilNode = {Obj = Instance.new("Folder")}
@@ -1701,7 +1702,7 @@ local function main()
 		local formatLuaString = Lib.FormatLuaString
 
 		while curObj do
-			if curObj == game then
+			if curObj == game or curObj == rawGame then
 				path = "game"..path
 				break
 			end
@@ -1723,7 +1724,7 @@ local function main()
 					local parCh = getCh(parObj)
 					local fcInd = tableFind(parCh,curObj)
 					indexName = ":GetChildren()["..fcInd.."]"
-				elseif parObj == game and API.Classes[className] and API.Classes[className].Tags.Service then
+				elseif (parObj == game or parObj == rawGame) and API.Classes[className] and API.Classes[className].Tags.Service then
 					indexName = ':GetService("'..className..'")'
 				end
 			elseif parObj == nil then
@@ -2560,6 +2561,7 @@ return search]==]
 
 		-- Fill in nodes
 		nodes[game] = {Obj = game}
+		nodes[rawGame] = nodes[game]
 		expanded[nodes[game]] = true
 
 		-- Nil Instances
